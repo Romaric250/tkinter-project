@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 
+
 def chat_page(root):
     root.title("Chat Page")
     root.geometry('500x500')
@@ -44,7 +45,14 @@ def chat_page(root):
             messagebox.showerror("Error", "All fields are required except attachment.")
         else:
             messagebox.showinfo("Success", "Request successfully submitted.")
-            # Call function to navigate to the dashboard here
+            go_back(root)
+            
+
+    def go_back(root):
+        from dashboard import dashboard_page
+        dashboard_page(root)
+          
+   
 
     submit_button = ttk.Button(frame, text="Submit Request", command=submit_request)
     submit_button.grid(row=5, column=1, sticky=E)
