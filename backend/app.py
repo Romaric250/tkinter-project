@@ -86,6 +86,15 @@ def get_users():
         response.append(user)
     return jsonify(response), 200
 
+@app.route('/get_user/<email>', methods=['GET'])
+def get_user(email):
+    user = db.users.find_one({"email": email})
+    if user:
+        user['_id'] = str(user['_id'])
+        return jsonify(user), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
 
 
 @app.route('/create_request/<userId>', methods=['POST'])
@@ -99,7 +108,6 @@ def create_request(userId):
             "level": data['level'],
             "topic": data['topic'],
             "message": data['message'],
-            "attachment": data['attachment'],
             "status": "Pending",
             "created_at": datetime.now()
         }
