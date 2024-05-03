@@ -8,7 +8,11 @@ from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_cors import CORS
 from bson import ObjectId
-from bson.errors import InvalidId   
+from bson.errors import InvalidId  
+from datetime import datetime, timedelta
+import threading 
+
+# the threading libry is used to create a mutual exclusion lock
 
 
 app = Flask(__name__)
@@ -97,9 +101,40 @@ def get_user(email):
 
 
 
+# @app.route('/create_request/<userId>', methods=['POST'])
+# def create_request(userId):
+    
+#     try:
+#         data = request.json
+#         user_request = {
+#             "userId": ObjectId(userId),
+#             "name": data['name'],
+#             "age": data['age'],
+#             "level": data['level'],
+#             "topic": data['topic'],
+#             "message": data['message'],
+#             "status": "Pending",
+#             "created_at": datetime.now()
+#         }
+#         create_request = db.requests.insert_one(user_request)
+#         return jsonify({"message": "Request created successfully", "request_id": str(create_request.inserted_id), "user_id": str(user_request["userId"])}), 201
+#     except InvalidId:
+#         return jsonify({"error": "Invalid user ID format"}), 400
+
+
+
+
+
+# Mutex for mutual exclusion
+mutex = threading.Lock()
+
 @app.route('/create_request/<userId>', methods=['POST'])
 def create_request(userId):
     try:
+        # Acquire the lock, so that no any other user can enter this bloc
+        # untill one user has successfully completed the request creation.
+        mutex.acquire()
+        
         data = request.json
         user_request = {
             "userId": ObjectId(userId),
@@ -111,10 +146,26 @@ def create_request(userId):
             "status": "Pending",
             "created_at": datetime.now()
         }
+
+        # Check the last request made by the user
+        last_request = db.requests.find_one({"userId": ObjectId(userId)}, sort=[("created_at", -1)])
+
+        # If the last request was made less than 3 days ago, return an error message
+        if last_request and last_request["created_at"] > datetime.now() - timedelta(days=3):
+            return jsonify({"error": "You can only create a new request if 3 days have passed since the last request"}), 400
+
+        # If the last request was made 3 or more days ago, proceed to create the request
         create_request = db.requests.insert_one(user_request)
+        
+        # Release the lock, so that other users can enter this block and try to create a request
+        mutex.release()
+
         return jsonify({"message": "Request created successfully", "request_id": str(create_request.inserted_id), "user_id": str(user_request["userId"])}), 201
     except InvalidId:
+        # Release the lock in case of error
+        mutex.release()
         return jsonify({"error": "Invalid user ID format"}), 400
+
 
 @app.route('/get_requests/<userId>', methods=['GET'])
 def get_requests(userId):
