@@ -1,7 +1,7 @@
 from tkinter import *
 import main
-from view_requests import view_request_status_page
-from chat import chat_page
+from UI.view_requests import view_request_status_page
+from UI.chat import chat_page
 
 def dashboard_page(root):
     for widget in root.winfo_children():
