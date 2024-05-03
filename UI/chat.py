@@ -49,7 +49,7 @@ def chat_page(root):
             
 
     def go_back(root):
-        from UI.dashboard import dashboard_page
+        from dashboard import dashboard_page
         dashboard_page(root)
           
    

@@ -28,7 +28,7 @@ def view_request_status_page(root):
     back_button.pack(pady=20)
 
 def go_back(root):
-    from UI.dashboard import dashboard_page
+    from dashboard import dashboard_page
     dashboard_page(root)
     
     

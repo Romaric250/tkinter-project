@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-import UI.chat as chat
+import chat as chat
 
 def main_page(root):
     for widget in root.winfo_children():

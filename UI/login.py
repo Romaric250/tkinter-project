@@ -1,6 +1,6 @@
 from tkinter import *
 import main
-from UI.dashboard import dashboard_page
+from dashboard import dashboard_page
 
 def login_page(root):
     root.title("Login Page")
