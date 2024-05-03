@@ -8,6 +8,8 @@ from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_cors import CORS
 from bson import ObjectId
+from bson.errors import InvalidId   
+
 
 app = Flask(__name__)
 app.secret_key = "jumpstart@dev"
@@ -72,7 +74,7 @@ def login_user():
         
         create_user = db.users.insert_one(user)
         # send_email(data['email'], token)
-        return jsonify({"message": "User created successfully", "user_id": str(create_user.inserted_id)}), 201
+        return jsonify({"message": "User created successfully", "user_id": str(create_user.inserted_id)}), 200
 
 
 @app.route('/get_users', methods=['GET'])
@@ -84,12 +86,7 @@ def get_users():
         response.append(user)
     return jsonify(response), 200
 
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
-from flask import Flask, request, jsonify
-from datetime import datetime
 
-# Assuming you have these imports and you've setup your Flask app and MongoDB connection
 
 @app.route('/create_request/<userId>', methods=['POST'])
 def create_request(userId):
@@ -105,12 +102,30 @@ def create_request(userId):
             "attachment": data['attachment'],
             "status": "Pending",
             "created_at": datetime.now()
-            
         }
         create_request = db.requests.insert_one(user_request)
-        return jsonify({"message": "Request created successfully", "request_id": str(create_request.inserted_id)}), 201
+        return jsonify({"message": "Request created successfully", "request_id": str(create_request.inserted_id), "user_id": str(user_request["userId"])}), 201
     except InvalidId:
         return jsonify({"error": "Invalid user ID format"}), 400
+
+@app.route('/get_requests/<userId>', methods=['GET'])
+def get_requests(userId):
+    try:
+        user_id = ObjectId(userId)
+    except InvalidId:
+        return jsonify({"error": "Invalid user ID format"}), 400
+
+    requests = db.requests.find({"userId": user_id})
+
+    
+    requests_list = []
+    for request in requests:
+        request['_id'] = str(request['_id'])  
+        request['userId'] = str(request['userId'])  
+        requests_list.append(request)
+
+    return jsonify(requests_list), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)

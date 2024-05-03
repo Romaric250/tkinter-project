@@ -1,8 +1,8 @@
+import requests
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-
 
 def chat_page(root):
     root.title("Chat Page")
@@ -10,8 +10,7 @@ def chat_page(root):
 
     frame = ttk.Frame(root, padding="10")
     frame.pack(fill=BOTH, expand=True)
-
-    # Form fields
+    
     name_label = ttk.Label(frame, text="Name:")
     name_label.grid(row=0, column=0, sticky=W)
     name_entry = ttk.Entry(frame, width=30)
@@ -44,15 +43,31 @@ def chat_page(root):
         if not name_entry.get() or not age_entry.get() or not level_entry.get() or not topic_entry.get() or not message_entry.get("1.0", "end").strip():
             messagebox.showerror("Error", "All fields are required except attachment.")
         else:
-            messagebox.showinfo("Success", "Request successfully submitted.")
-            go_back(root)
             
+            url = "http://127.0.0.1:5000/create_request/6634c36b260690dbf1796828"
+
+           
+            data = {
+                "name": name_entry.get(),
+                "age": age_entry.get(),
+                "level": level_entry.get(),
+                "topic": topic_entry.get(),
+                "message": message_entry.get("1.0", "end").strip()
+            }
+
+            
+            response = requests.post(url, json=data)
+
+           
+            if response.status_code == 200:
+                messagebox.showinfo("Success", "Request successfully submitted.")
+                go_back(root)
+            else:
+                messagebox.showerror("Error", "Failed to submit request.")
 
     def go_back(root):
         from dashboard import dashboard_page
         dashboard_page(root)
-          
-   
 
     submit_button = ttk.Button(frame, text="Submit Request", command=submit_request)
     submit_button.grid(row=5, column=1, sticky=E)
